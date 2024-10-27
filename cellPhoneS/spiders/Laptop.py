@@ -10,6 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from scrapy.selector import Selector
 import logging
+from ..config import *
 # Set the logging level for Selenium to WARNING
 logging.getLogger('selenium').setLevel(logging.CRITICAL)
 
@@ -18,8 +19,8 @@ class LaptopSpider(scrapy.Spider):
     allowed_domains = ["cellphones.com.vn"]
     start_urls = ["https://cellphones.com.vn/"]
     #Account info
-    phone = ""
-    pw = ""
+    phone = PHONE
+    pw = PW
     cookies = login(phone, pw)
 
     custom_settings = {
@@ -59,14 +60,14 @@ class LaptopSpider(scrapy.Spider):
     def parse_brand_page(self, response):
          # Locate the "Show more" button and click it
         self.driver.get(response.url)
-        # if (response.url == "https://cellphones.com.vn/laptop/dell.html"):
-        #     for i in range(3):
-        #         show_more_button = WebDriverWait(self.driver, 5).until(
-        #             EC.presence_of_element_located((By.XPATH, "//a[@class='button btn-show-more button__show-more-product']"))
-        #         ) 
+        if (response.url == "https://cellphones.com.vn/laptop/dell.html"):
+            for i in range(3):
+                show_more_button = WebDriverWait(self.driver, 5).until(
+                    EC.presence_of_element_located((By.XPATH, "//a[@class='button btn-show-more button__show-more-product']"))
+                ) 
                 
-        #         if show_more_button.is_displayed() and show_more_button.is_enabled():
-        #             show_more_button.click()  # Click the "Show more" button
+                if show_more_button.is_displayed() and show_more_button.is_enabled():
+                    show_more_button.click()  # Click the "Show more" button
     
                     
         # else:
