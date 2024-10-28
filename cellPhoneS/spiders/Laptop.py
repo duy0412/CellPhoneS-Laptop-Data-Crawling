@@ -43,6 +43,7 @@ class LaptopSpider(scrapy.Spider):
         laptop_link = response.xpath("//div[@class = 'label-menu-tree']/a/@href").get()
         if laptop_link:
             yield response.follow(laptop_link, callback=self.parse_laptop_brands)
+            
 
     def parse_laptop_brands(self, response):
         brand_links = response.xpath("//div[@class = 'list-brand']/a/@href").getall()
@@ -54,6 +55,7 @@ class LaptopSpider(scrapy.Spider):
 
         for link in unique:
             yield response.follow(link, callback=self.parse_brand_page)
+            
             
 
     
@@ -96,6 +98,7 @@ class LaptopSpider(scrapy.Spider):
         for link in laptop_links:
             yield response.follow(link, callback = self.parse_laptop)
             
+            
 
            
     
@@ -134,14 +137,33 @@ class LaptopSpider(scrapy.Spider):
         # Check if title and price elements are present
         title_element = selector.xpath("//div[@class='box-product-name']/h1/text()")
         price_element = selector.xpath("//span[@class='item-variant-price']/text()")
-        spec_element = selector.xpath("//ul[@class = 'technical-content']/li")
+        # Click the button to show all specifications
+        try:
+            spec_button = WebDriverWait(self.driver, 5).until(
+                    EC.presence_of_element_located((By.XPATH, "//button[@class='button button__show-modal-technical my-3 is-flex is-justify-content-center']"))
+                ) 
+                
+            self.driver.execute_script("arguments[0].click();", spec_button)  # Click the button using JavaScript
+            time.sleep(1)  # Wait for the specifications to load
+        except Exception as e:
+            pass
+
+    # Update the page source to include all specifications
+        updated_page_source = self.driver.page_source
+        selector = Selector(text=updated_page_source)
+
+        spec_element = selector.xpath("//div[@class = 'modal is-active']//section[@class = 'modal-card-body']//div[@class = 'modal-item-description mx-2']//div[@class = 'px-3 py-2 is-flex is-align-items-center is-justify-content-space-between']")
+
 
         if title_element and price_element:
             title = title_element.get()
             price = price_element.get()
             specs = dict()
             for spec in spec_element:
-                key = spec.xpath("./p/text()").get()
+                if( spec.xpath("./p/a")):
+                    key = spec.xpath("./p/a/text()").get()
+                else:
+                    key = spec.xpath("./p/text()").get()
                 value = spec.xpath("./div/text()").getall()
                 if(len(value) == 1):
                     if (", " in value):
