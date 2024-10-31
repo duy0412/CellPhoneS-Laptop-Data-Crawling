@@ -103,7 +103,7 @@ class LaptopSpider(scrapy.Spider):
            
     
     def parse_laptop(self, response):   
-
+        
         self.driver.get(response.url)
         # Wait for the title and price elements to be present
         try:
@@ -166,8 +166,8 @@ class LaptopSpider(scrapy.Spider):
                     key = spec.xpath("./p/text()").get()
                 value = spec.xpath("./div/text()").getall()
                 if(len(value) == 1):
-                    if (", " in value):
-                        tmp = value.split(", ")
+                    if (", " in value[0]):
+                        tmp = value[0].split(", ")
                         value = tmp
                     else:
                         value = value[0]
